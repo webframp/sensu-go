@@ -6,6 +6,12 @@ import { withStyles } from "material-ui/styles";
 import Card from "material-ui/Card";
 import Typography from "material-ui/Typography";
 import classNames from "classnames";
+import Table, {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "material-ui/Table";
 
 import AppContent from "../components/AppContent";
 
@@ -62,7 +68,19 @@ class EventsPage extends React.Component {
           <Card className={classNames(classes.card, classes.firstCard)}>
             <div className={classes.container}>
               <Typography type="headline">Checkname</Typography>
-              ... iterate over check details
+              <Table>
+                <TableHead />
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Key</TableCell>
+                    <TableCell>Value</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Key</TableCell>
+                    <TableCell>Value</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </Card>
           <Card className={classes.card}>
