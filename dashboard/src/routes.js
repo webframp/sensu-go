@@ -4,6 +4,7 @@ import { makeRouteConfig, Redirect, Route } from "found";
 import AppWrapper from "./components/AppWrapper";
 import LoginPage from "./pages/Login";
 import EventsPage from "./pages/EventsPage";
+import EventDetailsPage from "./pages/EventDetailsPage";
 import ChecksPage from "./pages/ChecksPage";
 import QueryPage from "./pages/GraphQLExplorerPage";
 
@@ -25,6 +26,11 @@ export default makeRouteConfig(
           ...params,
           ...route.location.query,
         })}
+      />
+      <Route
+        path="events/:id"
+        Component={EventDetailsPage}
+        query={EventDetailsPage.query}
       />
       <Route path="checks" Component={ChecksPage} query={ChecksPage.query} />
       <Route path="query-explorer" Component={QueryPage} />
