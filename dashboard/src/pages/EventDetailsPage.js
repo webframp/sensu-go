@@ -6,14 +6,8 @@ import { withStyles } from "material-ui/styles";
 import Card from "material-ui/Card";
 import Typography from "material-ui/Typography";
 import classNames from "classnames";
-import Table, {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from "material-ui/Table";
-
 import AppContent from "../components/AppContent";
+import CheckDetailsCard from "../components/CheckDetailsCard";
 
 const styles = {
   cardHolder: {
@@ -24,8 +18,8 @@ const styles = {
   card: {
     width: "100%",
   },
-  firstCard: {
-    marginRight: 24,
+  notFirstCard: {
+    marginLeft: 24,
   },
   container: {
     padding: 16,
@@ -34,21 +28,16 @@ const styles = {
 
 class EventsPage extends React.Component {
   static propTypes = {
-    // eslint-disable-next-line react/forbid-prop-types
     classes: PropTypes.object.isRequired,
+    node: PropTypes.object.isRequired,
   };
 
   static query = graphql`
-    query EventsPageQuery($environment: String!, $organization: String!) {
-      viewer {
-        ...EventsContainer_viewer
-      }
-      environment(organization: $organization, environment: $environment) {
-        events(first: 1) {
-          edges {
-            node {
-              ...EventDetailsContainer_event
-            }
+    query EventDetailsPageQuery($id: ID!) {
+      node(id: $id) {
+        ... on Event {
+          check {
+            ...CheckDetailsCard_check
           }
         }
       }
@@ -65,25 +54,8 @@ class EventsPage extends React.Component {
           </div>
         </Card>
         <div className={classes.cardHolder}>
-          <Card className={classNames(classes.card, classes.firstCard)}>
-            <div className={classes.container}>
-              <Typography type="headline">Checkname</Typography>
-              <Table>
-                <TableHead />
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Key</TableCell>
-                    <TableCell>Value</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Key</TableCell>
-                    <TableCell>Value</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-          <Card className={classes.card}>
+          <CheckDetailsCard check={this.props.node.check} />
+          <Card className={classNames(classes.card, classes.notFirstCard)}>
             <div className={classes.container}>
               <Typography type="headline">Entityname</Typography>
             </div>
