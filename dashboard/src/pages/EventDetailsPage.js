@@ -13,6 +13,7 @@ const styles = {
   cardHolder: {
     display: "flex",
     justifyContent: "space-evenly",
+    alignItems: "flex-start",
     marginTop: 24,
   },
   card: {
@@ -48,18 +49,20 @@ class EventsPage extends React.Component {
     const { classes } = this.props;
     return (
       <AppContent>
-        <Card>
-          <div className={classes.container}>
-            <Typography type="headline">History</Typography>
-          </div>
-        </Card>
-        <div className={classes.cardHolder}>
-          <CheckDetailsCard check={this.props.node.check} />
-          <Card className={classNames(classes.card, classes.notFirstCard)}>
+        <div>
+          <Card>
             <div className={classes.container}>
-              <Typography type="headline">Entityname</Typography>
+              <Typography type="headline">History</Typography>
             </div>
           </Card>
+          <div className={classes.cardHolder}>
+            <CheckDetailsCard check={this.props.node.check} />
+            <Card className={classNames(classes.card, classes.notFirstCard)}>
+              <div className={classes.container}>
+                <Typography type="headline">Entity</Typography>
+              </div>
+            </Card>
+          </div>
         </div>
       </AppContent>
     );
