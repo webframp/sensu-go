@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -210,6 +211,9 @@ func (s *Session) Start() (err error) {
 		if err := s.bus.Subscribe(topic, agentID, s.checkChannel); err != nil {
 			logger.WithError(err).Error("error starting subscription")
 			return err
+		}
+		if strings.Contains(topic, "entity") {
+			continue
 		}
 		ring := s.ringGetter.GetRing("subscription", topic)
 		if err := ring.Add(context.TODO(), agentID); err != nil {
