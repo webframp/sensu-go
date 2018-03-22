@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 
 	"github.com/sensu/sensu-go/testing/mockring"
@@ -13,26 +12,15 @@ func BenchmarkWizardBusPublish(b *testing.B) {
 
 	tt := []int{1, 10, 100, 1000, 10000}
 
-	startClients := func(wg *sync.WaitGroup, bus *WizardBus, numClients int) (done chan struct{}) {
-		done = make(chan struct{})
+	startClients := func(bus *WizardBus, numClients int) {
 		for i := 0; i < numClients; i++ {
 			ch := channelSubscriber{make(chan interface{}, 1000)}
 			go func(client string, ch channelSubscriber) {
-				subsc, _ := bus.Subscribe(topicName, client, ch)
-				for {
-					select {
-					case <-ch.Channel:
-					case <-done:
-						wg.Done()
-						subsc.Cancel()
-						close(ch.Channel)
-						return
-					}
+				bus.Subscribe(topicName, client, ch)
+				for range ch.Channel {
 				}
 			}(fmt.Sprintf("client-%d", i), ch)
 		}
-		return done
-
 	}
 
 	for _, tc := range tt {
@@ -42,10 +30,7 @@ func BenchmarkWizardBusPublish(b *testing.B) {
 			})
 			_ = bus.Start()
 
-			wg := &sync.WaitGroup{}
-			wg.Add(tc)
-
-			done := startClients(wg, bus, tc)
+			go startClients(bus, tc)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -53,8 +38,6 @@ func BenchmarkWizardBusPublish(b *testing.B) {
 					b.FailNow()
 				}
 			}
-			close(done)
-			wg.Wait()
 		})
 	}
 }

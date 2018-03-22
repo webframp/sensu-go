@@ -19,8 +19,7 @@ import (
 // a dependency on reflection to determine the type of the received interface{}.
 type WizardBus struct {
 	running    atomic.Value
-	topicsMu   sync.RWMutex
-	topics     map[string]*wizardTopic
+	topics     sync.Map
 	errchan    chan error
 	ringGetter types.RingGetter
 }
@@ -37,7 +36,6 @@ type WizardOption func(*WizardBus) error
 func NewWizardBus(cfg WizardBusConfig, opts ...WizardOption) (*WizardBus, error) {
 	bus := &WizardBus{
 		errchan:    make(chan error, 1),
-		topics:     make(map[string]*wizardTopic),
 		ringGetter: cfg.RingGetter,
 	}
 	for _, opt := range opts {
@@ -58,11 +56,6 @@ func (b *WizardBus) Start() error {
 func (b *WizardBus) Stop() error {
 	b.running.Store(false)
 	close(b.errchan)
-	b.topicsMu.Lock()
-	for _, wTopic := range b.topics {
-		wTopic.Close()
-	}
-	b.topicsMu.Unlock()
 	return nil
 }
 
@@ -77,23 +70,6 @@ func (b *WizardBus) Status() error {
 // Err ...
 func (b *WizardBus) Err() <-chan error {
 	return b.errchan
-}
-
-// Create a WizardBus topic (WizardTopic) with consumer channel
-// bindings. Every topic has its own mutex, sending data to consumers
-// should only be blocked when adding (Subscribe) or removing
-// (Unsubscribe) a consumer binding to the topic. This function also
-// creates a goroutine that will continue to pull a message from the
-// topic's send buffer, lock the topic's mutex (R), write the message
-// to each consumer channel bound to the topic, and then unlock the
-// topic's mutex.
-func (b *WizardBus) createTopic(topic string) *wizardTopic {
-	wTopic := &wizardTopic{
-		id:       topic,
-		bindings: make(map[string]Subscriber),
-	}
-
-	return wTopic
 }
 
 // Subscribe to a WizardBus topic. This function locks the WizardBus
@@ -113,14 +89,14 @@ func (b *WizardBus) Subscribe(topic string, consumer string, sub Subscriber) (Su
 		return Subscription{}, errors.New("bus no longer running")
 	}
 
-	b.topicsMu.Lock()
-	defer b.topicsMu.Unlock()
+	// We can either have a mutex only for subscribing so that we don't
+	// have to alloc on subscribe or we can alloc on subscribe. It seems
+	// like the latter is the least expensive since every agent connection
+	// calls Subscribe multiple times.
+	t, _ := b.topics.LoadOrStore(topic, &wizardTopic{id: topic})
+	wTopic := t.(*wizardTopic)
 
-	if _, ok := b.topics[topic]; !ok {
-		b.topics[topic] = b.createTopic(topic)
-	}
-
-	subscription, err := b.topics[topic].Subscribe(consumer, sub)
+	subscription, err := wTopic.Subscribe(consumer, sub)
 	return subscription, err
 }
 
@@ -131,11 +107,9 @@ func (b *WizardBus) Publish(topic string, msg interface{}) error {
 		return errors.New("bus no longer running")
 	}
 
-	b.topicsMu.RLock()
-	defer b.topicsMu.RUnlock()
-
-	if wTopic, ok := b.topics[topic]; ok {
-		wTopic.Send(msg)
+	v, ok := b.topics.Load(topic)
+	if ok {
+		v.(*wizardTopic).Send(msg)
 	}
 
 	return nil
@@ -147,13 +121,12 @@ func (b *WizardBus) PublishDirect(topic string, msg interface{}) error {
 		return errors.New("bus no longer running")
 	}
 
-	b.topicsMu.RLock()
-	wt, ok := b.topics[topic]
-	b.topicsMu.RUnlock()
-
+	t, ok := b.topics.Load(topic)
 	if !ok {
 		return nil
 	}
+
+	wt := t.(*wizardTopic)
 
 	if wt.ring == nil {
 		if err := b.makeRing(wt); err != nil {
@@ -169,18 +142,18 @@ func (b *WizardBus) PublishDirect(topic string, msg interface{}) error {
 func (b *WizardBus) makeRing(wt *wizardTopic) error {
 	ring := b.ringGetter.GetRing(wt.id)
 
-	wt.RLock()
-	bindings := make([]string, 0, len(wt.bindings))
-	for id := range wt.bindings {
-		bindings = append(bindings, id)
-	}
-	wt.RUnlock()
+	var err error
 
-	for _, id := range bindings {
-		if err := ring.Add(context.Background(), id); err != nil {
-			return err
-		}
+	wt.bindings.Range(func(k, _ interface{}) bool {
+		id := k.(string)
+		err = ring.Add(context.Background(), id)
+		return err != nil
+	})
+
+	if err != nil {
+		return err
 	}
+
 	wt.ring = ring
 
 	return nil

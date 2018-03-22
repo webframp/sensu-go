@@ -16,23 +16,20 @@ import (
 // consumer channel bindings.
 type wizardTopic struct {
 	id       string
-	bindings map[string]Subscriber
+	bindings sync.Map
 	ring     types.Ring
-	sync.RWMutex
 }
 
 // Send a message to all subscribers to this topic.
 func (wTopic *wizardTopic) Send(msg interface{}) {
-	wTopic.RLock()
-	defer wTopic.RUnlock()
-
-	for _, subscriber := range wTopic.bindings {
+	wTopic.bindings.Range(func(_, v interface{}) bool {
+		subscriber := v.(Subscriber)
 		select {
 		case subscriber.Receiver() <- msg:
 		default:
-			continue
 		}
-	}
+		return true
+	})
 }
 
 // SendDirect sends a message directly to a subscriber of this topic.
@@ -41,25 +38,25 @@ func (wTopic *wizardTopic) SendDirect(msg interface{}) error {
 		return errors.New("no ring for topic: " + wTopic.id)
 	}
 
-	wTopic.RLock()
-	defer wTopic.RUnlock()
-
 	id, err := wTopic.ring.Next(context.Background())
 	if err != nil {
 		return err
 	}
 
-	wTopic.bindings[id].Receiver() <- msg
+	v, ok := wTopic.bindings.Load(id)
+	if !ok {
+		// Should we clean up this ring entry?
+		return errors.New("subscriber not found: " + id)
+	}
+
+	v.(Subscriber).Receiver() <- msg
 
 	return nil
 }
 
 // Subscribe a Subscriber to this topic and receive a Subscription.
 func (wTopic *wizardTopic) Subscribe(id string, sub Subscriber) (Subscription, error) {
-	wTopic.Lock()
-	defer wTopic.Unlock()
-
-	wTopic.bindings[id] = sub
+	wTopic.bindings.Store(id, sub)
 
 	if wTopic.ring != nil {
 		if err := wTopic.ring.Add(context.Background(), id); err != nil {
@@ -75,9 +72,7 @@ func (wTopic *wizardTopic) Subscribe(id string, sub Subscriber) (Subscription, e
 
 // Unsubscribe a consumer from this topic.
 func (wTopic *wizardTopic) unsubscribe(id string) error {
-	wTopic.Lock()
-	delete(wTopic.bindings, id)
-	wTopic.Unlock()
+	wTopic.bindings.Delete(id)
 
 	if wTopic.ring != nil {
 		backoff := &retry.ExponentialBackoff{
@@ -97,13 +92,4 @@ func (wTopic *wizardTopic) unsubscribe(id string) error {
 	}
 
 	return nil
-}
-
-// Close all WizardTopic bindings.
-func (wTopic *wizardTopic) Close() {
-	wTopic.Lock()
-	for consumer := range wTopic.bindings {
-		delete(wTopic.bindings, consumer)
-	}
-	wTopic.Unlock()
 }
