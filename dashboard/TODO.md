@@ -1,0 +1,11 @@
+- Login card footer
+- 404 Page
+- Error Page(?)
+- Mock-out dashboard
+- Entities page
+- Connect checks page
+- Right-align buttons
+- Fixup filter box on mobile
+- Remove silences, hooks and handlers from drawer
+- Fallback from missing pages
+- Redirect to valid organization / environment on login

@@ -7,6 +7,7 @@ import RestrictUnauthenticated from "./components/RestrictUnauthenticated";
 import ChecksPage from "./pages/ChecksPage";
 import DashboardPage from "./pages/DashboardPage";
 import EventsPage from "./pages/EventsPage";
+import EventDetailsPage from "./pages/EventDetailsPage";
 import LoginPage from "./pages/Login";
 import RootRedirect from "./pages/RootRedirect";
 
@@ -19,7 +20,8 @@ export default makeRouteConfig(
       <Route path="/:organization/:environment" Component={AppWrapper}>
         <Route path="" Component={DashboardPage} />
         <Route path="checks" Component={ChecksPage} />
-        <Route path="events" Component={EventsPage} query={EventsPage.query} />
+        <Route path="events" Component={EventsPage} />
+        <Route path="events/:id" Component={EventDetailsPage} />
         <Redirect from="dashboard" to="" />
       </Route>
     </Route>
