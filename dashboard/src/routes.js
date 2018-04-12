@@ -21,7 +21,7 @@ export default makeRouteConfig(
         <Route path="" Component={DashboardPage} />
         <Route path="checks" Component={ChecksPage} />
         <Route path="events" Component={EventsPage} />
-        <Route path="events/:id" Component={EventDetailsPage} />
+        <Route path="events/:entity/:check" Component={EventDetailsPage} />
         <Redirect from="dashboard" to="" />
       </Route>
     </Route>
