@@ -165,5 +165,5 @@ required = ["github.com/shirou/w32"]
   name = "github.com/NYTimes/gziphandler"
 
 [[constraint]]
-  name = "github.com/atlassian/gostatsd"
-  version = "2.4.0"
+  name = "github.com/nikkiattea/gostatsd"
+  branch = "disable-internal-metrics"

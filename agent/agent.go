@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/atlassian/gostatsd/pkg/statsd"
+	"github.com/nikkiattea/gostatsd/pkg/statsd"
 	"github.com/sensu/sensu-go/agent/assetmanager"
 	"github.com/sensu/sensu-go/handler"
 	"github.com/sensu/sensu-go/transport"

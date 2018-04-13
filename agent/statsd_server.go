@@ -12,15 +12,17 @@ import (
 	"time"
 
 	"github.com/atlassian/gostatsd"
-	"github.com/atlassian/gostatsd/pkg/statsd"
+	"github.com/nikkiattea/gostatsd/pkg/statsd"
 	"github.com/sensu/sensu-go/types"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/time/rate"
 )
 
 // NewStatsdServer provides a new statsd server for the sensu-agent.
 func NewStatsdServer(a *Agent) *statsd.Server {
 	c := a.config.StatsdServer
-	s := statsd.NewServer()
+	s := NewServer()
 	backend, err := NewClientFromViper(s.Viper, a)
 	if err != nil {
 		logger.WithError(err).Error("failed to create sensu-statsd backend")
@@ -28,7 +30,40 @@ func NewStatsdServer(a *Agent) *statsd.Server {
 	s.Backends = []gostatsd.Backend{backend}
 	s.FlushInterval = time.Duration(c.FlushInterval) * time.Second
 	s.MetricsAddr = fmt.Sprintf("%s:%d", c.Host, c.Port)
+	s.StatserType = statsd.StatserNull
 	return s
+}
+
+// NewServer will create a new statsd Server with the default configuration.
+func NewServer() *statsd.Server {
+	return &statsd.Server{
+		Backends:            []gostatsd.Backend{},
+		Limiter:             rate.NewLimiter(statsd.DefaultMaxCloudRequests, statsd.DefaultBurstCloudRequests),
+		InternalTags:        statsd.DefaultInternalTags,
+		InternalNamespace:   statsd.DefaultInternalNamespace,
+		DefaultTags:         statsd.DefaultTags,
+		ExpiryInterval:      statsd.DefaultExpiryInterval,
+		FlushInterval:       statsd.DefaultFlushInterval,
+		MaxReaders:          statsd.DefaultMaxReaders,
+		MaxParsers:          statsd.DefaultMaxParsers,
+		MaxWorkers:          statsd.DefaultMaxWorkers,
+		MaxQueueSize:        statsd.DefaultMaxQueueSize,
+		MaxConcurrentEvents: statsd.DefaultMaxConcurrentEvents,
+		EstimatedTags:       statsd.DefaultEstimatedTags,
+		MetricsAddr:         statsd.DefaultMetricsAddr,
+		PercentThreshold:    statsd.DefaultPercentThreshold,
+		IgnoreHost:          statsd.DefaultIgnoreHost,
+		ConnPerReader:       statsd.DefaultConnPerReader,
+		HeartbeatEnabled:    statsd.DefaultHeartbeatEnabled,
+		ReceiveBatchSize:    statsd.DefaultReceiveBatchSize,
+		CacheOptions: statsd.CacheOptions{
+			CacheRefreshPeriod:        statsd.DefaultCacheRefreshPeriod,
+			CacheEvictAfterIdlePeriod: statsd.DefaultCacheEvictAfterIdlePeriod,
+			CacheTTL:                  statsd.DefaultCacheTTL,
+			CacheNegativeTTL:          statsd.DefaultCacheNegativeTTL,
+		},
+		Viper: viper.New(),
+	}
 }
 
 // BackendName is the name of this statsd backend.
@@ -53,7 +88,7 @@ func NewClient(a *Agent) (*Client, error) {
 // the sensu-agent, preparing payload synchronously but doing the send asynchronously.
 // Must not read/write MetricMap asynchronously.
 func (c Client) SendMetricsAsync(ctx context.Context, metrics *gostatsd.MetricMap, cb gostatsd.SendCallback) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	metricsPoints := prepareMetrics(now, metrics)
 	go func() {
 		cb([]error{c.sendMetrics(metricsPoints)})
@@ -117,6 +152,16 @@ func (c Client) sendMetrics(points []*types.MetricPoint) (retErr error) {
 	if err != nil {
 		logger.WithError(err).Error("error marshaling metric event")
 		return err
+	}
+
+	logger.WithField("event", event).Info("DEMO METRIC EVENT")
+	for _, metric := range metrics.Points {
+		logger.WithFields(logrus.Fields{
+			"Name":      metric.Name,
+			"Value":     metric.Value,
+			"Timestamp": metric.Timestamp,
+			"Tags":      metric.Tags,
+		}).Info("DEMO METRIC POINT")
 	}
 
 	// TODO: Swallow the message until we can handle metric events

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/atlassian/gostatsd"
+	"github.com/nikkiattea/gostatsd"
 	"github.com/sensu/sensu-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,7 +73,7 @@ func TestComposeMetricTags(t *testing.T) {
 }
 
 func TestComposeCounterPoints(t *testing.T) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	key := "foo:bar"
 	tags := composeMetricTags("boo:baz")
 	counter := FixtureCounter(now)
@@ -89,7 +89,7 @@ func TestComposeCounterPoints(t *testing.T) {
 }
 
 func TestComposeTimerPoints(t *testing.T) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	key := "foo:bar"
 	tags := composeMetricTags("boo:baz")
 	timer := FixtureTimer(now)
@@ -105,7 +105,7 @@ func TestComposeTimerPoints(t *testing.T) {
 }
 
 func TestComposeGaugePoints(t *testing.T) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	key := "foo:bar"
 	tags := composeMetricTags("boo:baz")
 	gauge := FixtureGauge(now)
@@ -121,7 +121,7 @@ func TestComposeGaugePoints(t *testing.T) {
 }
 
 func TestComposeSetPoints(t *testing.T) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	key := "foo:bar"
 	tags := composeMetricTags("boo:baz")
 	set := FixtureSet(now)
@@ -137,7 +137,7 @@ func TestComposeSetPoints(t *testing.T) {
 }
 
 func TestPreparePoints(t *testing.T) {
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	metrics := FixtureMetricMap(now)
 
 	points := prepareMetrics(now, &metrics)
@@ -166,7 +166,7 @@ func TestReceiveMetrics(t *testing.T) {
 		assert.FailNow("failed to create UDP connection")
 	}
 
-	now := time.Now().UnixNano()
+	now := time.Now().Unix()
 	metrics := FixtureMetricMap(now)
 	bytes, _ := json.Marshal(metrics)
 
