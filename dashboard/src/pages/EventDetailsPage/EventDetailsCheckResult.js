@@ -20,7 +20,6 @@ class EventDetailsCheckResult extends React.Component {
 
   render() {
     const { check } = this.props;
-
     return (
       <React.Fragment>
         <p>status: {check.status}</p>

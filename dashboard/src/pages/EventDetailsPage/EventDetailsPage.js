@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { Query } from "react-apollo";
 
+import EventDetailsCheckResult from "./EventDetailsCheckResult";
+
 const query = gql`
   query EventDetailsPageQuery(
     $ns: NamespaceInput!
@@ -12,8 +14,14 @@ const query = gql`
     event(ns: $ns, entity: $entity, check: $check) {
       id
       timestamp
+
+      check {
+        ...EventDetailsCheckResult_check
+      }
     }
   }
+
+  ${EventDetailsCheckResult.fragments.check}
 `;
 
 class EventDetailsPage extends React.Component {
@@ -35,7 +43,8 @@ class EventDetailsPage extends React.Component {
 
           return (
             <React.Fragment>
-              <p>timestamp: {data.event.timestamp}</p>
+              <EventDetailsCheckResult check={data.check} />
+              <EventDetailsCheckResult check={data.check} />
             </React.Fragment>
           );
         }}
