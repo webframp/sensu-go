@@ -11,7 +11,9 @@ class EventDetailsCheckResult extends React.Component {
     check: gql`
       fragment EventDetailsCheckResult_check on Check {
         status
-        lastOk
+        lastOK
+        occurrences
+        occurrencesWatermark
       }
     `,
   };
