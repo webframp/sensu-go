@@ -2,8 +2,12 @@ import React from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
 import { Query } from "react-apollo";
-
+import Grid from "material-ui/Grid";
+import AppContent from "../../components/AppContent";
 import EventDetailsCheckResult from "./EventDetailsCheckResult";
+import EventDetailsHistory from "./EventDetailsHistory";
+import EventDetailsRelatedEntities from "./EventDetailsRelatedEntities";
+import EventDetailsConfiguration from "./EventDetailsConfiguration";
 
 const query = gql`
   query EventDetailsPageQuery(
@@ -17,11 +21,21 @@ const query = gql`
 
       check {
         ...EventDetailsCheckResult_check
+        ...EventDetailsHistory_check
+        ...EventDetailsConfiguration_check
+      }
+      entity {
+        ...EventDetailsRelatedEntities_entity
+        ...EventDetailsConfiguration_entity
       }
     }
   }
 
   ${EventDetailsCheckResult.fragments.check}
+  ${EventDetailsHistory.fragments.check}
+  ${EventDetailsRelatedEntities.fragments.entity}
+  ${EventDetailsConfiguration.fragments.check}
+  ${EventDetailsConfiguration.fragments.entity}
 `;
 
 class EventDetailsPage extends React.Component {
@@ -38,14 +52,30 @@ class EventDetailsPage extends React.Component {
 
     return (
       <Query query={query} variables={{ ...match.params, ns }}>
-        {({ data = {}, loading }) => {
+        {({ data: { event } = {}, loading }) => {
           if (loading) return <div>Loading...</div>;
+          if (!event) return <div>Not found!</div>;
 
           return (
-            <React.Fragment>
-              <EventDetailsCheckResult check={data.check} />
-              <EventDetailsCheckResult check={data.check} />
-            </React.Fragment>
+            <AppContent>
+              <Grid container>
+                <Grid item xs={12}>
+                  <EventDetailsHistory check={event.check} />
+                </Grid>
+                <Grid item xs={12}>
+                  <EventDetailsCheckResult check={event.check} />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <EventDetailsRelatedEntities entity={event.entity} />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <EventDetailsConfiguration
+                    check={event.check}
+                    entity={event.entity}
+                  />
+                </Grid>
+              </Grid>
+            </AppContent>
           );
         }}
       </Query>

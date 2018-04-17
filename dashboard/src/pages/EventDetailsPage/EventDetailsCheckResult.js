@@ -1,12 +1,8 @@
 import React from "react";
-import PropTypes from "prop-types";
 import gql from "graphql-tag";
+import Placeholder from "../../components/PlaceholderCard";
 
 class EventDetailsCheckResult extends React.Component {
-  static propTypes = {
-    check: PropTypes.object.isRequired,
-  };
-
   static fragments = {
     check: gql`
       fragment EventDetailsCheckResult_check on Check {
@@ -14,17 +10,17 @@ class EventDetailsCheckResult extends React.Component {
         lastOK
         occurrences
         occurrencesWatermark
+        name
+        executed
+        issued
+        duration
+        output
       }
     `,
   };
 
   render() {
-    const { check } = this.props;
-    return (
-      <React.Fragment>
-        <p>status: {check.status}</p>
-      </React.Fragment>
-    );
+    return <Placeholder tall />;
   }
 }
 
