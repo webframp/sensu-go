@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import moment from "moment";
 import { compose } from "recompose";
 
 import gql from "graphql-tag";
@@ -16,6 +15,7 @@ import Disclosure from "material-ui-icons/MoreVert";
 import ResolveEventMutation from "../mutations/ResolveEventMutation";
 import EventStatus from "./EventStatus";
 import { TableListItem } from "./TableList";
+import RelativeDate from "./RelativeDate";
 
 const styles = theme => ({
   root: {
@@ -60,14 +60,6 @@ const styles = theme => ({
   pipe: { marginTop: -4 },
 });
 
-function fromNow(date) {
-  const delta = new Date(date) - new Date();
-  if (delta < 0) {
-    return moment.duration(delta).humanize(true);
-  }
-  return "just now";
-}
-
 class EventListItem extends React.Component {
   static propTypes = {
     classes: PropTypes.object.isRequired,
@@ -105,18 +97,7 @@ class EventListItem extends React.Component {
     `,
   };
 
-  constructor(props) {
-    super(props);
-    this.fromNow = fromNow(props.event.timestamp);
-  }
-
   state = { anchorEl: null };
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.event.timestamp !== nextProps.event.timestamp) {
-      this.fromNow = fromNow(nextProps.event.timestamp);
-    }
-  }
 
   onClose = () => {
     this.setState({ anchorEl: null });
@@ -145,9 +126,9 @@ class EventListItem extends React.Component {
   };
 
   render() {
-    const { checked, classes, event: { entity, check }, onChange } = this.props;
+    const { checked, classes, event, onChange } = this.props;
+    const { entity, check, timestamp } = event;
     const { anchorEl } = this.state;
-    const time = this.fromNow;
 
     return (
       <TableListItem className={classes.root} selected={checked}>
@@ -164,8 +145,11 @@ class EventListItem extends React.Component {
             </strong>
           </span>
           <div className={classes.timeHolder}>
-            Last occurred <strong>&nbsp;{time}&nbsp;</strong> and exited with
-            status <strong>&nbsp;{check.status}.</strong>
+            Last occurred{" "}
+            <strong>
+              &nbsp;<RelativeDate timestamp={timestamp} />&nbsp;
+            </strong>{" "}
+            and exited with status <strong>&nbsp;{check.status}.</strong>
           </div>
           <Typography variant="caption" className={classes.command}>
             {check.output}

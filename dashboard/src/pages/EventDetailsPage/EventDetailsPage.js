@@ -25,6 +25,7 @@ const query = gql`
         ...EventDetailsConfiguration_check
       }
       entity {
+        ...EventDetailsCheckResult_entity
         ...EventDetailsRelatedEntities_entity
         ...EventDetailsConfiguration_entity
       }
@@ -32,6 +33,7 @@ const query = gql`
   }
 
   ${EventDetailsCheckResult.fragments.check}
+  ${EventDetailsCheckResult.fragments.entity}
   ${EventDetailsHistory.fragments.check}
   ${EventDetailsRelatedEntities.fragments.entity}
   ${EventDetailsConfiguration.fragments.check}
@@ -56,23 +58,21 @@ class EventDetailsPage extends React.Component {
           if (loading) return <div>Loading...</div>;
           if (!event) return <div>Not found!</div>;
 
+          const { check, entity } = event;
           return (
             <AppContent>
               <Grid container>
                 <Grid item xs={12}>
-                  <EventDetailsHistory check={event.check} />
+                  <EventDetailsHistory check={check} />
                 </Grid>
                 <Grid item xs={12}>
-                  <EventDetailsCheckResult check={event.check} />
+                  <EventDetailsCheckResult check={check} entity={entity} />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <EventDetailsRelatedEntities entity={event.entity} />
+                  <EventDetailsRelatedEntities entity={entity} />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <EventDetailsConfiguration
-                    check={event.check}
-                    entity={event.entity}
-                  />
+                  <EventDetailsConfiguration check={check} entity={entity} />
                 </Grid>
               </Grid>
             </AppContent>
