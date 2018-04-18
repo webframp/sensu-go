@@ -9,6 +9,7 @@ import NotFoundView from "../../views/NotFoundView";
 import DashboardContent from "./DashboardContent";
 import ChecksContent from "./ChecksContent";
 import EventsContent from "./EventsContent";
+import EventDetailsContent from "./EventDetailsContent";
 
 class EnvironmentView extends React.PureComponent {
   static propTypes = {
@@ -34,6 +35,11 @@ class EnvironmentView extends React.PureComponent {
             exact
             path={`${match.path}/events`}
             component={EventsContent}
+          />
+          <Route
+            exact
+            path={`${match.path}/events/:entity/:check`}
+            component={EventDetailsContent}
           />
           <Redirect exact from={`${match.path}/dashboard`} to={match.path} />
           <Route component={NotFoundView} />
