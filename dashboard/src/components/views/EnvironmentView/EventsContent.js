@@ -8,6 +8,7 @@ import Typography from "material-ui/Typography";
 import AppContent from "../../AppContent";
 import EventsContainer from "../../EventsContainer";
 import SearchBox from "../../SearchBox";
+import Content from "../../Content";
 
 import NotFoundView from "../../views/NotFoundView";
 
@@ -30,11 +31,8 @@ class EventsContent extends React.Component {
     },
     searchBox: {
       width: "100%",
-      marginLeft: theme.spacing.unit,
-      marginRight: theme.spacing.unit,
       [theme.breakpoints.up("sm")]: {
         width: "auto",
-        margin: 0,
       },
     },
     title: {
@@ -113,24 +111,22 @@ class EventsContent extends React.Component {
 
           return (
             <AppContent>
-              <div>
-                <div className={classes.headline}>
-                  <Typography className={classes.title} variant="headline">
-                    Events
-                  </Typography>
-                  <SearchBox
-                    className={classes.searchBox}
-                    onChange={this.requerySearchBox}
-                    value={this.state.filterValue}
-                  />
-                </div>
-                <EventsContainer
-                  className={classes.container}
-                  onQueryChange={this.changeQuery}
-                  environment={environment}
-                  loading={loading}
+              <Content className={classes.headline}>
+                <Typography className={classes.title} variant="headline">
+                  Events
+                </Typography>
+                <SearchBox
+                  className={classes.searchBox}
+                  onChange={this.requerySearchBox}
+                  value={this.state.filterValue}
                 />
-              </div>
+              </Content>
+              <EventsContainer
+                className={classes.container}
+                onQueryChange={this.changeQuery}
+                environment={environment}
+                loading={loading}
+              />
             </AppContent>
           );
         }}

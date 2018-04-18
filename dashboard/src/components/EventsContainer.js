@@ -15,7 +15,7 @@ import { ListItemText, ListItemIcon } from "material-ui/List";
 import Checkbox from "material-ui/Checkbox";
 
 import EventsListItem from "./EventsListItem";
-import EventStatus from "./EventStatus";
+import CheckStatusIcon from "./CheckStatusIcon";
 import ResolveEventMutation from "../mutations/ResolveEventMutation";
 import TableList, {
   TableListHeader,
@@ -311,25 +311,25 @@ class EventsContainer extends React.Component {
               </MenuItem>
               <MenuItem key="warning" value={[1]}>
                 <ListItemIcon>
-                  <EventStatus status={1} />
+                  <CheckStatusIcon status={1} />
                 </ListItemIcon>
                 <ListItemText primary="Warning" />
               </MenuItem>
               <MenuItem key="critical" value={[2]}>
                 <ListItemIcon>
-                  <EventStatus status={2} />
+                  <CheckStatusIcon status={2} />
                 </ListItemIcon>
                 <ListItemText primary="Critical" />
               </MenuItem>
               <MenuItem key="unknown" value={[3]}>
                 <ListItemIcon>
-                  <EventStatus status={3} />
+                  <CheckStatusIcon status={3} />
                 </ListItemIcon>
                 <ListItemText primary="Unknown" />
               </MenuItem>
               <MenuItem key="passing" value={[0]}>
                 <ListItemIcon>
-                  <EventStatus status={0} />
+                  <CheckStatusIcon status={0} />
                 </ListItemIcon>
                 <ListItemText primary="Passing" />
               </MenuItem>
