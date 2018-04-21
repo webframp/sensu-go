@@ -33,6 +33,8 @@ rules:
   # We use underscores to prefix "private" class methods
   no-underscore-dangle: 0
 
+  import/prefer-default-export: 0
+
   # https://github.com/apollographql/eslint-plugin-graphql
   graphql/template-strings:
     - error
@@ -40,10 +42,8 @@ rules:
       env: apollo
       schemaJsonFilepath: ./src/schema.json
       validators:
-        - FieldsOnCorrectType
         - FragmentsOnCompositeTypes
         - KnownArgumentNames
-        - KnownDirectives
         - KnownTypeNames
         - LoneAnonymousOperation
         - NoFragmentCycles

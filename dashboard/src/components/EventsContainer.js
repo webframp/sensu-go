@@ -16,7 +16,7 @@ import Checkbox from "material-ui/Checkbox";
 
 import EventsListItem from "./EventsListItem";
 import EventStatus from "./EventStatus";
-import ResolveEventMutation from "../mutations/ResolveEventMutation";
+import resolveEvent from "../mutations/resolveEvent";
 import TableList, {
   TableListHeader,
   TableListBody,
@@ -187,7 +187,7 @@ class EventsContainer extends React.Component {
     );
 
     selectedKeys.forEach(key => {
-      ResolveEventMutation.commit(this.props.client, key).then(
+      resolveEvent(this.props.client, { id: key }).then(
         () => {
           this.setState(({ rowState }) =>
             Object.assign(rowState, { [key]: false }),
